@@ -21,6 +21,10 @@ In this exercise, we will build a REST-ful backend API server for a simple compa
 
 ### The challenge
 
+- How to return a nested JSON object?
+
+  I had to make separate queries, then construct a nested object.
+
 ### Links
 
 ## My process
@@ -61,6 +65,12 @@ In this exercise, we will build a REST-ful backend API server for a simple compa
     - `npm install express`
     - `npm install pg`
 
+- Add Database
+
+- Add Company Routes
+
+- Add Invoices Routes
+
 ### Built with
 
 ### What I learned
@@ -69,4 +79,4 @@ In this exercise, we will build a REST-ful backend API server for a simple compa
 
 ## Time estimate
 
-Springboard Estimation: 10 - 15 Hours
+Springboard Estimation: 3 - 5 Hours
