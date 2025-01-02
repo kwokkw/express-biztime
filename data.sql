@@ -1,4 +1,7 @@
-\c biztime
+-- DROP DATABASE IF EXISTS biztime_test;
+-- CREATE DATABASE biztime_test;
+
+\c biztime;
 
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS companies;
@@ -23,8 +26,22 @@ INSERT INTO companies
   VALUES ('apple', 'Apple Computer', 'Maker of OSX.'),
          ('ibm', 'IBM', 'Big blue.');
 
-INSERT INTO invoices (comp_Code, amt, paid, paid_date)
+INSERT INTO invoices (comp_code, amt, paid, paid_date)
   VALUES ('apple', 100, false, null),
          ('apple', 200, false, null),
          ('apple', 300, true, '2018-01-01'),
          ('ibm', 400, false, null);
+
+SELECT 
+  i.code AS industry_code,
+  i.industry AS industry_name,
+  ARRAY_AGG(c.code) AS company_codes,
+  ARRAY_AGG(c.name) AS company_names
+FROM 
+  industries i
+LEFT JOIN 
+  company_industry ci ON i.code = ci.ind_code
+LEFT JOIN 
+  companies c ON ci.comp_code = c.code
+GROUP BY 
+  i.code, i.industry;

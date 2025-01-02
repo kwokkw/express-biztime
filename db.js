@@ -6,7 +6,7 @@ const { Client } = pg;
 let DB_URI;
 
 if (process.env.NODE_ENV === "test") {
-  DB_URI = "postgresql://postgres:17273185@localhost:5432/biztime";
+  DB_URI = "postgresql://postgres:17273185@localhost:5432/biztime_test";
 } else {
   DB_URI = "postgresql://postgres:17273185@localhost:5432/biztime";
 }

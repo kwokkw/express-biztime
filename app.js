@@ -4,12 +4,14 @@ import express, { json } from "express";
 import ExpressError from "./expressError.js";
 import invRouter from "./routes/invoices.js";
 import coRouter from "./routes/companies.js";
+import indRouter from "./routes/industries.js";
 
 const app = express();
 
 app.use(json());
 app.use("/invoices", invRouter);
 app.use("/companies", coRouter);
+app.use("/industries", indRouter);
 
 /** 404 handler */
 

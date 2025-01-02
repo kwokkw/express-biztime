@@ -17,12 +17,16 @@ invRouter.get("/", async (req, res, next) => {
 // Get an object on given invoice
 invRouter.get("/:id", async (req, res, next) => {
   try {
-    const invId = req.params.id;
     const invResults = await db.query("SELECT * FROM invoices WHERE id=$1", [
-      invId,
+      req.params.id,
     ]);
+
+    // Handle nonexistent invoice
     if (invResults.rows.length === 0) {
-      throw new ExpressError(`Invoices not found with id of ${id}`, 404);
+      throw new ExpressError(
+        `Invoices not found with id of ${req.params.id}`,
+        404
+      );
     }
 
     const companyResults = await db.query(
@@ -30,15 +34,10 @@ invRouter.get("/:id", async (req, res, next) => {
       [invResults.rows[0].comp_code]
     );
 
-    const invoice = {
-      id: invResults.rows[0].id,
-      amt: invResults.rows[0].amt,
-      paid: invResults.rows[0].paid,
-      add_date: invResults.rows[0].add_date,
-      paid_date: invResults.rows[0].paid_date,
-      company: companyResults.rows[0],
-    };
-    return res.json({ invoice });
+    const { id, amt, paid, add_date, paid_date } = invResults.rows[0];
+    const company = companyResults.rows[0];
+
+    return res.json({ id, amt, paid, add_date, paid_date, company });
   } catch (error) {
     next(error);
   }
@@ -62,15 +61,38 @@ invRouter.post("/", async (req, res, next) => {
 invRouter.patch("/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { amt } = req.body;
+    const { amt, paid } = req.body;
+
+    // Check if invoice exists
     const results = await db.query(
-      "UPDATE invoices SET amt=$1 WHERE id=$2 RETURNING *",
-      [amt, id]
+      "SELECT paid_date, paid FROM invoices WHERE id=$1",
+      [id]
     );
+
+    // Return 404 if invoice not found
     if (results.rows.length === 0) {
       throw new ExpressError(`Can't update invoice with id of ${id}`, 404);
     }
-    return res.json({ invoice: results.rows[0] });
+
+    let { paid: currentPaid, paid_date: currentPaidDate } = results.rows[0];
+
+    // • If paying unpaid invoice: sets paid_date to today
+    if (paid && !currentPaid) {
+      currentPaidDate = new Date();
+    } else if (!paid && currentPaid) {
+      // • If un-paying: sets paid_date to null
+      currentPaidDate = null;
+    }
+
+    const updatedResults = await db.query(
+      `
+      UPDATE invoices SET amt = $1, paid = $2, paid_date = $3
+      WHERE id = $4
+      RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+      [amt, paid, currentPaidDate, id]
+    );
+
+    return res.json({ invoice: updatedResults.rows[0] });
   } catch (error) {
     next(error);
   }
